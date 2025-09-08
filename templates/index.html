@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aadhaar Forgery Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Aadhaar Photo Forgery Detection</h1>
+        <p>Upload a photo of an Aadhaar card to check for signs of tampering in the main photograph.</p>
+        <form action="/analyze" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" required>
+            <input type="submit" value="Analyze Image">
+        </form>
+    </div>
+</body>
+</html>
