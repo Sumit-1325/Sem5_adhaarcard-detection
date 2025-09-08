@@ -9,27 +9,53 @@
 <body>
     <div class="container">
         <h1>Analysis Result</h1>
+        
         {% if results.error %}
             <div class="verdict-box forged">
                 <h2>Error</h2>
                 <p>{{ results.error }}</p>
             </div>
+        
         {% else %}
             <div class="verdict-box {{ 'forged' if 'Forged' in results.verdict else 'authentic' }}">
                 <h2>Verdict: {{ results.verdict }}</h2>
-                <p>ELA Tamper Score: {{ results.ela_score }}</p>
+                <p><strong>Document Tamper Score:</strong> {{ results.document_analysis.ela_score }}</p>
+                
+                {% if results.face_photo_analysis.ela_score != 'N/A' %}
+                    <p><strong>Face Photo Tamper Score:</strong> {{ results.face_photo_analysis.ela_score }}</p>
+                {% endif %}
             </div>
-            <div class="image-grid">
-                <div>
-                    <h3>Cropped Photograph</h3>
-                    <img src="{{ url_for('static', filename=results.main_photo_path.split('/')[-1]) }}?v={{ range(1, 1000) | random }}" alt="Main Photo">
-                </div>
-                <div>
-                    <h3>ELA Heatmap</h3>
-                    <img src="{{ url_for('static', filename=results.ela_image_path.split('/')[-1]) }}?v={{ range(1, 1000) | random }}" alt="ELA Result">
+            
+            <hr>
+            
+            <div class="analysis-section">
+                <h2>Full Document Analysis</h2>
+                <div class="image-grid single">
+                    <div>
+                        <h3>Document ELA Heatmap</h3>
+                        <img src="{{ url_for('static', filename=results.document_analysis.ela_path) }}?v={{ range(1, 1000) | random }}" alt="Document ELA Result">
+                    </div>
                 </div>
             </div>
+
+            {% if results.face_photo_analysis.cropped_path != 'N/A' %}
+                <hr>
+                <div class="analysis-section">
+                    <h2>Face Photo Analysis</h2>
+                    <div class="image-grid">
+                        <div>
+                            <h3>Cropped Photograph</h3>
+                            <img src="{{ url_for('static', filename=results.face_photo_analysis.cropped_path) }}?v={{ range(1, 1000) | random }}" alt="Main Photo">
+                        </div>
+                        <div>
+                            <h3>Face ELA Heatmap</h3>
+                            <img src="{{ url_for('static', filename=results.face_photo_analysis.ela_path) }}?v={{ range(1, 1000) | random }}" alt="Face ELA Result">
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         {% endif %}
+        
         <a href="/"><button>Analyze Another Document</button></a>
     </div>
 </body>
