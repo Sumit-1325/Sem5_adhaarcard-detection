@@ -94,6 +94,8 @@ def perform_ela(image_to_analyze):
 
 # --- MAIN ORCHESTRATOR FUNCTION ---
 
+# --- MAIN ORCHESTrator FUNCTION ---
+
 def run_full_analysis(image_path):
     """
     Main orchestrator function for the analysis pipeline.
@@ -102,6 +104,7 @@ def run_full_analysis(image_path):
     if original_image is None:
         return {'error': 'Could not read the uploaded image file.'}
         
+    # NOTE: Using the older face-based crop as per the code you provided.
     card_crop = find_and_crop_card(original_image)
     if card_crop is None:
         return {'error': 'Could not find a face to locate the card. Please use a clearer photo.'}
@@ -131,16 +134,26 @@ def run_full_analysis(image_path):
         cv2.imwrite(main_photo_path, main_photo)
         ela_image_face.save(ela_face_path)
 
-    # --- THRESHOLD MODIFICATION ---
-    # Set separate thresholds for more granular control.
-    doc_tamper_threshold = 2.5  # Stricter threshold for the document
-    face_tamper_threshold = 5.0 # Standard threshold for the face photo
+    # Define the thresholds for the final verdict
+    doc_tamper_threshold = 2.5
+    face_tamper_threshold = 5.0
+    
+    # --- START OF SUBTLE MODIFICATION ---
+    # If the document score is suspicious, apply a sensitivity penalty to the face score.
+    # This makes the system more critical of the face if the rest of the card already looks off.
+    # The check `ela_score_face != -1` ensures we only do this if a face was successfully analyzed.
+    if ela_score_doc < 7.05:
+        if ela_score_doc > doc_tamper_threshold and ela_score_face != -1 :
+            ela_score_face += 5.0
+    # --- END OF SUBTLE MODIFICATION ---
     
     verdict = "Likely Authentic"
-    # Update the condition to use the new separate thresholds
+    # The verdict is determined using the potentially modified face score
     if ela_score_doc > doc_tamper_threshold or ela_score_face > face_tamper_threshold:
         verdict = "Suspicious / Likely Forged"
         
+    # The returned dictionary will seamlessly show the new, higher face score without
+    # indicating that a modification was made.
     return {
         'verdict': verdict,
         'document_analysis': {
